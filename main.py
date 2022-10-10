@@ -6,10 +6,9 @@
 #3 Collect all link to detail page of each product
 #4 Write scrapped data to a csv file
 
-
-from urllib import response
 import requests
 from bs4 import BeautifulSoup as bs
+import csv
 
 def get_page(url):
     response = requests.get(url)
@@ -20,9 +19,6 @@ def get_page(url):
     return soup
 
 def get_detail_data(soup):
-    title = ''
-    price = 0
-    sold_item = 0
     try:
         title = soup.find('h1', class_='x-item-title__mainTitle').find('span').text
     except:
@@ -43,11 +39,28 @@ def get_detail_data(soup):
     }
     return data
 
+def get_index_data(soup):
+    try:
+        links = soup.find_all('a', class_='s-item__link')
+    except:
+        links = []
+    # urls = [item.get('href') for item in links]
+    urls = [item.get('href') for item in links]
+    return urls
+
+def write_csv(data, url):
+    with open('output.csv', 'a') as file:
+        writer = csv.writer(file)
+        row = [data['title'], data['price'], data['sold'], url]
+        writer.writerow(row)
 
 def main():
-    url = 'https://www.ebay.com/itm/263038140739?hash=item3d3e4b8143:g:IIEAAOSwN1peYA5n&amdata=enc%3AAQAHAAAAoH03XKH12LLbrs0QUg6AxhV8F%2BHnWEpUcPz1TUxwEooIGiJ%2BQyLV%2Bpp3dzVgNaj5QFG33zwASqwvj0PfsIx8G9yvB2PqhuCRJtoIUp3fuZVUDdoPdkAWDYKA2LNhrnEMakz1w5VlRyRDePwBWPwK8N%2BZeQwbkz7HAejtGJO4kZdNSHpi8lH4b8xCbfH3h4VabgeZSPvFT1%2Bxxk%2F%2B1YQNpUA%3D%7Ctkp%3ABk9SR6j9npL4YA'
-    get_page(url)
-    print(get_detail_data(get_page(url)))
+    url = 'https://www.ebay.com/sch/i.html?&_nkw=android'
+    products = get_index_data(get_page(url))
+    for link in products[1:]:
+        data = get_detail_data(get_page(link))
+        write_csv(data, link)
+    
 
 
 
