@@ -18,6 +18,16 @@ def get_page(url):
         soup = bs(response.text, 'html.parser')
     return soup
 
+def get_index_data(soup):
+    try:
+        links = soup.find_all('a', class_='s-item__link')
+        urls = [item.get('href') for item in links]
+    except:
+        links = []
+    # urls = [item.get('href') for item in links]
+    urls = [item.get('href') for item in links]
+    return urls
+
 def get_detail_data(soup):
     try:
         title = soup.find('h1', class_='x-item-title__mainTitle').find('span').text
@@ -35,33 +45,34 @@ def get_detail_data(soup):
     data = {
         'title': title,
         'price': price,
-        'sold': sold
+        'sold': sold,
     }
     return data
 
-def get_index_data(soup):
-    try:
-        links = soup.find_all('a', class_='s-item__link')
-    except:
-        links = []
-    # urls = [item.get('href') for item in links]
-    urls = [item.get('href') for item in links]
-    return urls
 
-def write_csv(data, url):
-    with open('output.csv', 'a') as file:
-        writer = csv.writer(file)
-        row = [data['title'], data['price'], data['sold'], url]
-        writer.writerow(row)
+# def write_csv(data, url):
+#     with open('output.csv', 'a') as file:
+#         writer = csv.writer(file)
+#         data.append(url)
+#         print(data)
+        # writer.writerow(data)
+
+# def csv_write(data, url):
+#     df = pd.DataFrame(data)
+#     df.to_excel('output')
 
 def main():
     url = 'https://www.ebay.com/sch/i.html?&_nkw=android'
     products = get_index_data(get_page(url))
+    filename = 'another.csv'
+    field = ['title', 'price', 'sold']
+    dict1 = {}
     for link in products[1:]:
         data = get_detail_data(get_page(link))
-        write_csv(data, link)
-    
-
+        with open(filename, 'a', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=field)
+            # writer.writeheader()
+            writer.writerow(data)
 
 
 
